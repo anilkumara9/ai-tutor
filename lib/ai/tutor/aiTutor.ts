@@ -1,8 +1,8 @@
 import { generateText } from "ai";
 import { google } from "@ai-sdk/google";
 
-// Use the provided Gemini API key
-const GEMINI_API_KEY = "AIzaSyD4yPEZ3fqrSSyqqetySjnDg8vknyCFpLg";
+// Get the API key from environment variables
+const GEMINI_API_KEY = process.env.GOOGLE_API_KEY || "AIzaSyD4yPEZ3fqrSSyqqetySjnDg8vknyCFpLg";
 
 /**
  * AI Tutor Service
@@ -344,7 +344,7 @@ export class AITutorService {
       try {
         // Generate personalized content using Google Gemini
         const { text: sessionContent } = await generateText({
-          model: google("gemini-2.0-flash-001", { apiKey: GEMINI_API_KEY as any }),
+          model: google("gemini-2.0-flash-001"),
           prompt: `
             Create a highly personalized and advanced learning session on "${topic}" for a ${adaptedDifficulty} level student.
 
@@ -566,7 +566,7 @@ export class AITutorService {
       try {
         // Analyze the response using emotion-aware AI
         const { text: feedbackContent } = await generateText({
-          model: google("gemini-2.0-flash-001", { apiKey: GEMINI_API_KEY as any }),
+          model: google("gemini-2.0-flash-001"),
           prompt: `
             Analyze this student response to a learning exercise.
 
@@ -679,7 +679,7 @@ export class AITutorService {
 
       // Generate assessment questions
       const { text: assessmentContent } = await generateText({
-        model: google("gemini-2.0-flash-001", { apiKey: GEMINI_API_KEY as any }),
+        model: google("gemini-2.0-flash-001"),
         prompt: `
           Create a comprehensive skill assessment for "${topic}".
 
@@ -737,7 +737,7 @@ export class AITutorService {
 
       // Generate a personalized learning path
       const { text: pathContent } = await generateText({
-        model: google("gemini-2.0-flash-001", { apiKey: GEMINI_API_KEY as any }),
+        model: google("gemini-2.0-flash-001"),
         prompt: `
           Create a personalized learning path for a student with the following goal:
           "${goal}" within a timeframe of ${timeframe}.
