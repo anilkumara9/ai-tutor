@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="512" height="512" viewBox="0 0 512 512" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <circle cx="256" cy="256" r="240" fill="url(#paint0_radial)" />
+  <path d="M256 96C167.634 96 96 167.634 96 256C96 344.366 167.634 416 256 416C344.366 416 416 344.366 416 256C416 167.634 344.366 96 256 96ZM256 384C185.307 384 128 326.693 128 256C128 185.307 185.307 128 256 128C326.693 128 384 185.307 384 256C384 326.693 326.693 384 256 384Z" fill="white" fill-opacity="0.9" />
+  <path d="M256 160C203.072 160 160 203.072 160 256C160 308.928 203.072 352 256 352C308.928 352 352 308.928 352 256C352 203.072 308.928 160 256 160ZM256 320C220.654 320 192 291.346 192 256C192 220.654 220.654 192 256 192C291.346 192 320 220.654 320 256C320 291.346 291.346 320 256 320Z" fill="white" fill-opacity="0.7" />
+  <path d="M256 224C238.327 224 224 238.327 224 256C224 273.673 238.327 288 256 288C273.673 288 288 273.673 288 256C288 238.327 273.673 224 256 224Z" fill="white" />
+  <path d="M256 64L288 32M256 64L224 32M256 64V32" stroke="white" stroke-width="8" stroke-linecap="round" stroke-linejoin="round" />
+  <path d="M256 448L288 480M256 448L224 480M256 448V480" stroke="white" stroke-width="8" stroke-linecap="round" stroke-linejoin="round" />
+  <path d="M448 256L480 288M448 256L480 224M448 256H480" stroke="white" stroke-width="8" stroke-linecap="round" stroke-linejoin="round" />
+  <path d="M64 256L32 288M64 256L32 224M64 256H32" stroke="white" stroke-width="8" stroke-linecap="round" stroke-linejoin="round" />
+  <path d="M380.5 131.5L401.5 110.5M380.5 131.5L401.5 152.5M380.5 131.5L412.5 131.5" stroke="white" stroke-width="6" stroke-linecap="round" stroke-linejoin="round" />
+  <path d="M131.5 380.5L110.5 401.5M131.5 380.5L152.5 401.5M131.5 380.5L131.5 412.5" stroke="white" stroke-width="6" stroke-linecap="round" stroke-linejoin="round" />
+  <path d="M131.5 131.5L110.5 110.5M131.5 131.5L152.5 110.5M131.5 131.5L131.5 99.5" stroke="white" stroke-width="6" stroke-linecap="round" stroke-linejoin="round" />
+  <path d="M380.5 380.5L401.5 401.5M380.5 380.5L359.5 401.5M380.5 380.5L380.5 412.5" stroke="white" stroke-width="6" stroke-linecap="round" stroke-linejoin="round" />
+  <defs>
+    <radialGradient id="paint0_radial" cx="0" cy="0" r="1" gradientUnits="userSpaceOnUse" gradientTransform="translate(256 256) rotate(90) scale(240)">
+      <stop offset="0" stop-color="#6366F1" />
+      <stop offset="0.5" stop-color="#8B5CF6" />
+      <stop offset="1" stop-color="#EC4899" />
+    </radialGradient>
+  </defs>
+</svg>

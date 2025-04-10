@@ -1,6 +1,7 @@
 "use client";
 
 import { z } from "zod";
+import React from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { toast } from "sonner";
@@ -30,6 +31,7 @@ const authFormSchema = (type: FormType) => {
 
 const AuthForm = ({ type }: { type: FormType }) => {
   const router = useRouter();
+  const [isLoading, setIsLoading] = React.useState(false);
 
   const formSchema = authFormSchema(type);
   const form = useForm<z.infer<typeof formSchema>>({
@@ -42,7 +44,15 @@ const AuthForm = ({ type }: { type: FormType }) => {
   });
 
   const onSubmit = async (data: z.infer<typeof formSchema>) => {
+    setIsLoading(true);
     try {
+      // Check if Firebase auth is initialized
+      if (!auth) {
+        toast.error(
+          "Authentication service is not available. Please try again later."
+        );
+        return;
+      }
       if (type === "sign-up") {
         const { name, email, password } = data;
 
@@ -81,17 +91,57 @@ const AuthForm = ({ type }: { type: FormType }) => {
           return;
         }
 
-        await signIn({
+        const result = await signIn({
           email,
           idToken,
         });
 
-        toast.success("Signed in successfully.");
+        if (!result || !result.success) {
+          toast.error(result?.message || "Sign in failed. Please try again.");
+          return;
+        }
+
+        toast.success(result.message || "Signed in successfully.");
         router.push("/");
       }
-    } catch (error) {
-      console.log(error);
-      toast.error(`There was an error: ${error}`);
+    } catch (error: any) {
+      console.error("Authentication error:", error);
+
+      // Handle Firebase auth errors with more user-friendly messages
+      if (error.code) {
+        switch (error.code) {
+          case "auth/invalid-credential":
+            toast.error("Invalid email or password. Please try again.");
+            break;
+          case "auth/user-not-found":
+            toast.error("No account found with this email. Please sign up.");
+            break;
+          case "auth/wrong-password":
+            toast.error("Incorrect password. Please try again.");
+            break;
+          case "auth/email-already-in-use":
+            toast.error("Email already in use. Please sign in instead.");
+            break;
+          case "auth/weak-password":
+            toast.error(
+              "Password is too weak. Please use a stronger password."
+            );
+            break;
+          case "auth/network-request-failed":
+            toast.error(
+              "Network error. Please check your internet connection."
+            );
+            break;
+          default:
+            toast.error(
+              `Authentication error: ${error.message || "Unknown error"}`
+            );
+        }
+      } else {
+        toast.error(`There was an error: ${error.message || error}`);
+      }
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -138,8 +188,12 @@ const AuthForm = ({ type }: { type: FormType }) => {
               type="password"
             />
 
-            <Button className="btn" type="submit">
-              {isSignIn ? "Sign In" : "Create an Account"}
+            <Button className="btn" type="submit" disabled={isLoading}>
+              {isLoading
+                ? "Loading..."
+                : isSignIn
+                ? "Sign In"
+                : "Create an Account"}
             </Button>
           </form>
         </Form>

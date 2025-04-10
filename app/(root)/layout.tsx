@@ -11,11 +11,26 @@ const Layout = async ({ children }: { children: ReactNode }) => {
 
   return (
     <div className="root-layout">
-      <nav>
+      <nav className="flex justify-between items-center">
         <Link href="/" className="flex items-center gap-2">
           <Image src="/logo.svg" alt="MockMate Logo" width={38} height={32} />
           <h2 className="text-primary-100">PrepWise</h2>
         </Link>
+
+        <div className="flex items-center gap-4">
+          <Link
+            href="/interview"
+            className="text-primary-100 hover:text-primary-200 transition-colors"
+          >
+            Interviews
+          </Link>
+          <Link
+            href="/nexus"
+            className="text-primary-100 hover:text-primary-200 transition-colors"
+          >
+            OmniLearn Nexus
+          </Link>
+        </div>
       </nav>
 
       {children}
