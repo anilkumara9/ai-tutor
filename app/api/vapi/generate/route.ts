@@ -37,7 +37,17 @@ export async function POST(request: Request) {
       createdAt: new Date().toISOString(),
     };
 
-    await db.collection("interviews").add(interview);
+    try {
+      // Only attempt to save to Firestore if db is available
+      if (db && typeof db.collection === 'function') {
+        await db.collection("interviews").add(interview);
+      } else {
+        console.log("Firestore not available, skipping database write");
+      }
+    } catch (dbError) {
+      console.error("Database error:", dbError);
+      // Continue execution even if database write fails
+    }
 
     return Response.json({ success: true }, { status: 200 });
   } catch (error) {
