@@ -15,8 +15,12 @@ export class AITutorService {
   private learningHistory: Record<string, any[]> = {};
   private emotionalState: Record<string, string> = {};
   private initialized: boolean = false;
+  private topicTaxonomy: Record<string, string[]> = {};
 
-  private constructor() {}
+  private constructor() {
+    // Initialize topic taxonomy for knowledge graph connections
+    this.initializeTopicTaxonomy();
+  }
 
   /**
    * Get singleton instance of AITutorService
@@ -26,6 +30,254 @@ export class AITutorService {
       AITutorService.instance = new AITutorService();
     }
     return AITutorService.instance;
+  }
+  
+  /**
+   * Initialize topic taxonomy for knowledge connections
+   */
+  private initializeTopicTaxonomy(): void {
+    this.topicTaxonomy = {
+      "blockchain": ["cryptocurrency", "smart contracts", "distributed ledger", "consensus algorithms", "web3"],
+      "web development": ["frontend", "backend", "full-stack", "responsive design", "web frameworks"],
+      "artificial intelligence": ["machine learning", "neural networks", "deep learning", "natural language processing", "computer vision"],
+      "data science": ["statistics", "data analysis", "big data", "data visualization", "predictive modeling"],
+      "cybersecurity": ["network security", "cryptography", "ethical hacking", "security protocols", "threat analysis"],
+      "cloud computing": ["aws", "azure", "google cloud", "serverless", "containerization"],
+      "mobile development": ["ios", "android", "react native", "flutter", "mobile ui design"],
+      "devops": ["continuous integration", "continuous deployment", "infrastructure as code", "monitoring", "automation"],
+      "software engineering": ["design patterns", "algorithms", "data structures", "testing", "software architecture"]
+    };
+  }
+  
+  /**
+   * Identify knowledge gaps based on user's learning history
+   */
+  private identifyKnowledgeGaps(userId: string, topic: string): string[] {
+    const history = this.learningHistory[userId] || [];
+    const relatedTopics = this.findRelatedTopics(topic);
+    
+    // Check which related topics the user hasn't studied yet
+    const studiedTopics = new Set(history.map(session => session.topic.toLowerCase()));
+    const gaps = relatedTopics.filter(related => !studiedTopics.has(related.toLowerCase()));
+    
+    if (gaps.length === 0) {
+      return [`Advanced concepts in ${topic}`, `Practical applications of ${topic}`, `Latest developments in ${topic}`];
+    }
+    
+    return gaps.map(gap => `Connection between ${topic} and ${gap}`);
+  }
+  
+  /**
+   * Adapt difficulty level based on user's previous performance
+   */
+  private adaptDifficultyLevel(userId: string, topic: string, baseSkillLevel: string): string {
+    const history = this.learningHistory[userId] || [];
+    
+    // Find relevant history entries for this topic or related topics
+    const relevantEntries = history.filter(entry => {
+      const entryTopic = entry.topic.toLowerCase();
+      return entryTopic === topic.toLowerCase() || 
+             this.findRelatedTopics(topic).some(related => 
+               entryTopic === related.toLowerCase());
+    });
+    
+    if (relevantEntries.length === 0) {
+      return baseSkillLevel; // No history, use the base skill level
+    }
+    
+    // Calculate average performance if available
+    const performanceScores = relevantEntries
+      .filter(entry => entry.performanceScore)
+      .map(entry => entry.performanceScore);
+    
+    if (performanceScores.length === 0) {
+      return baseSkillLevel;
+    }
+    
+    const avgPerformance = performanceScores.reduce((sum, score) => sum + score, 0) / performanceScores.length;
+    
+    // Adjust difficulty based on performance
+    if (avgPerformance > 85) {
+      return baseSkillLevel === "beginner" ? "intermediate" : "advanced";
+    } else if (avgPerformance < 50) {
+      return baseSkillLevel === "advanced" ? "intermediate" : "beginner";
+    }
+    
+    return baseSkillLevel;
+  }
+  
+  /**
+   * Personalize learning approach based on learning style
+   */
+  private personalizeLearningApproach(learningStyle: string, topic: string): string {
+    switch (learningStyle.toLowerCase()) {
+      case "visual":
+        return `Use diagrams, charts, and visual metaphors to explain ${topic} concepts. Include visual representations for each key concept and use color coding to highlight relationships between ideas.`;
+      
+      case "auditory":
+        return `Explain ${topic} concepts using clear verbal descriptions with analogies and stories. Suggest audio resources and encourage verbal repetition of key concepts.`;
+      
+      case "reading/writing":
+        return `Present ${topic} information in well-structured text with bullet points, definitions, and written examples. Encourage note-taking and written summaries of key concepts.`;
+      
+      case "kinesthetic":
+        return `Provide hands-on exercises and practical applications for ${topic} concepts. Include interactive elements and real-world projects that apply theoretical knowledge.`;
+      
+      default:
+        return `Use a balanced approach combining visual elements, clear explanations, written summaries, and practical exercises to teach ${topic}.`;
+    }
+  }
+  
+  /**
+   * Find related topics based on the topic taxonomy
+   */
+  private findRelatedTopics(topic: string): string[] {
+    // Normalize the topic
+    const normalizedTopic = topic.toLowerCase();
+    
+    // Check if the topic is a main category
+    if (this.topicTaxonomy[normalizedTopic]) {
+      return this.topicTaxonomy[normalizedTopic];
+    }
+    
+    // Check if the topic is a subtopic in any category
+    for (const [mainTopic, subtopics] of Object.entries(this.topicTaxonomy)) {
+      if (subtopics.includes(normalizedTopic)) {
+        // Return the main topic and other subtopics, excluding the current one
+        return [mainTopic, ...subtopics.filter(sub => sub !== normalizedTopic)];
+      }
+    }
+    
+    // If no direct match, find the closest match based on keywords
+    const allTopics = Object.keys(this.topicTaxonomy);
+    const bestMatch = allTopics.find(t => normalizedTopic.includes(t) || t.includes(normalizedTopic));
+    
+    if (bestMatch) {
+      return this.topicTaxonomy[bestMatch];
+    }
+    
+    // Default related topics if no match found
+    return ["software development", "computer science", "technology trends"];
+  }
+  
+  /**
+   * Calculate estimated time to complete a learning session
+   */
+  private calculateEstimatedTime(session: any): number {
+    // Base time in minutes
+    let baseTime = 30;
+    
+    // Add time based on number of concepts
+    if (session.keyConcepts) {
+      baseTime += session.keyConcepts.length * 10;
+    }
+    
+    // Add time based on number of exercises
+    if (session.exercises) {
+      baseTime += session.exercises.length * 15;
+    }
+    
+    // Add time for case studies
+    if (session.caseStudies) {
+      baseTime += session.caseStudies.length * 20;
+    }
+    
+    return baseTime;
+  }
+  
+  /**
+   * Map difficulty level to numeric value
+   */
+  private mapDifficultyToNumeric(difficulty: string): number {
+    switch (difficulty.toLowerCase()) {
+      case "beginner":
+        return 1;
+      case "intermediate":
+        return 2;
+      case "advanced":
+        return 3;
+      default:
+        return 1;
+    }
+  }
+  
+  /**
+   * Categorize a topic into its taxonomy
+   */
+  private categorizeTopic(topic: string): string[] {
+    const normalizedTopic = topic.toLowerCase();
+    const categories = [];
+    
+    // Check if it's a main category
+    if (this.topicTaxonomy[normalizedTopic]) {
+      categories.push(normalizedTopic);
+    }
+    
+    // Check if it's a subtopic
+    for (const [mainTopic, subtopics] of Object.entries(this.topicTaxonomy)) {
+      if (subtopics.includes(normalizedTopic)) {
+        categories.push(mainTopic);
+        break;
+      }
+    }
+    
+    // Check for partial matches
+    if (categories.length === 0) {
+      for (const [mainTopic, subtopics] of Object.entries(this.topicTaxonomy)) {
+        if (normalizedTopic.includes(mainTopic) || mainTopic.includes(normalizedTopic)) {
+          categories.push(mainTopic);
+          break;
+        }
+        
+        for (const subtopic of subtopics) {
+          if (normalizedTopic.includes(subtopic) || subtopic.includes(normalizedTopic)) {
+            categories.push(mainTopic);
+            break;
+          }
+        }
+      }
+    }
+    
+    // Default category if no match found
+    if (categories.length === 0) {
+      categories.push("general knowledge");
+    }
+    
+    return categories;
+  }
+  
+  /**
+   * Generate knowledge connections for a topic
+   */
+  private generateKnowledgeConnections(topic: string): string[] {
+    const relatedTopics = this.findRelatedTopics(topic);
+    return relatedTopics.map(related => `${topic} connects to ${related} through shared principles and applications`);
+  }
+  
+  /**
+   * Identify prerequisites for a topic
+   */
+  private identifyPrerequisites(topic: string): string[] {
+    const normalizedTopic = topic.toLowerCase();
+    
+    // Define some common prerequisites based on topic
+    const commonPrereqs: Record<string, string[]> = {
+      "blockchain": ["cryptography basics", "distributed systems", "data structures"],
+      "machine learning": ["statistics", "linear algebra", "calculus", "programming basics"],
+      "web development": ["html", "css", "javascript basics"],
+      "data science": ["statistics", "programming basics", "data structures"],
+      "cybersecurity": ["networking basics", "operating systems", "programming basics"]
+    };
+    
+    // Check for direct matches
+    for (const [key, prereqs] of Object.entries(commonPrereqs)) {
+      if (normalizedTopic.includes(key) || key.includes(normalizedTopic)) {
+        return prereqs;
+      }
+    }
+    
+    // Default prerequisites
+    return ["basic computer literacy", "logical thinking", "problem-solving skills"];
   }
 
   /**
@@ -80,40 +332,86 @@ export class AITutorService {
       const history = this.learningHistory[userId] || [];
       const emotionalState = this.emotionalState[userId] || "neutral";
 
+      // Determine user's knowledge gaps based on history
+      const knowledgeGaps = this.identifyKnowledgeGaps(userId, topic);
+      
+      // Adapt difficulty based on previous performance
+      const adaptedDifficulty = this.adaptDifficultyLevel(userId, topic, skillLevel);
+      
+      // Personalize learning approach based on user's learning style
+      const learningApproach = this.personalizeLearningApproach(userPrefs.learningStyle, topic);
+
       try {
         // Generate personalized content using Google Gemini
         const { text: sessionContent } = await generateText({
-          model: google("gemini-2.0-flash-001", { apiKey: GEMINI_API_KEY }),
+          model: google("gemini-2.0-flash-001", { apiKey: GEMINI_API_KEY as any }),
           prompt: `
-            Create a personalized learning session on "${topic}" for a ${skillLevel} level student.
+            Create a highly personalized and advanced learning session on "${topic}" for a ${adaptedDifficulty} level student.
 
             User preferences:
             - Learning style: ${userPrefs.learningStyle}
             - Pace preference: ${userPrefs.pacePreference}
-            - Difficulty: ${userPrefs.difficultyPreference}
+            - Difficulty: ${adaptedDifficulty}
             - Current emotional state: ${emotionalState}
+            
+            Knowledge gaps to address:
+            ${knowledgeGaps.join('\n')}
+            
+            Personalized learning approach:
+            ${learningApproach}
 
             The session should include:
-            1. A brief introduction to the topic
-            2. Key concepts explained in the user's preferred learning style
-            3. Interactive exercises appropriate for their skill level
-            4. A summary of what they've learned
-            5. Next steps for further learning
+            1. An engaging introduction that connects to the user's existing knowledge
+            2. Key concepts explained using the user's preferred learning style with real-world applications
+            3. Progressive interactive exercises that adapt to their skill level
+            4. Practical applications and case studies
+            5. A comprehensive summary with knowledge connections
+            6. Personalized next steps for mastery
 
             Format the response as a JSON object with the following structure:
             {
               "title": "Session title",
-              "introduction": "Brief introduction text",
+              "introduction": "Engaging introduction text that connects to prior knowledge",
+              "learningObjectives": ["Objective 1", "Objective 2", ...],
               "keyConcepts": [
-                { "title": "Concept 1", "explanation": "Explanation text", "example": "Example" },
+                { 
+                  "title": "Concept 1", 
+                  "explanation": "Detailed explanation text", 
+                  "example": "Real-world example",
+                  "visualRepresentation": "Description of visual aid",
+                  "practicalApplication": "How this concept is applied" 
+                },
                 ...
               ],
               "exercises": [
-                { "question": "Question text", "hint": "Hint text", "answer": "Answer text" },
+                { 
+                  "id": "ex1",
+                  "type": "multiple_choice/coding/short_answer/practical",
+                  "difficulty": "beginner/intermediate/advanced",
+                  "question": "Detailed question text", 
+                  "context": "Background information needed",
+                  "options": ["Option 1", "Option 2", ...] (for multiple choice),
+                  "hint": "Helpful hint text", 
+                  "answer": "Detailed answer explanation",
+                  "followUp": "Follow-up question or challenge" 
+                },
                 ...
               ],
-              "summary": "Summary text",
-              "nextSteps": ["Next step 1", "Next step 2", ...]
+              "caseStudies": [
+                {
+                  "title": "Case Study Title",
+                  "scenario": "Real-world scenario description",
+                  "challenge": "Problem to solve",
+                  "solution": "Approach to solution",
+                  "learningPoints": ["Key insight 1", "Key insight 2"]
+                }
+              ],
+              "summary": "Comprehensive summary text with knowledge connections",
+              "masteryChecklist": ["Skill 1", "Skill 2", ...],
+              "nextSteps": ["Personalized next step 1", "Personalized next step 2", ...],
+              "resources": [
+                { "title": "Resource name", "type": "article/video/course", "description": "Brief description" }
+              ]
             }
           `,
         });
@@ -268,7 +566,7 @@ export class AITutorService {
       try {
         // Analyze the response using emotion-aware AI
         const { text: feedbackContent } = await generateText({
-          model: google("gemini-2.0-flash-001", { apiKey: GEMINI_API_KEY }),
+          model: google("gemini-2.0-flash-001", { apiKey: GEMINI_API_KEY as any }),
           prompt: `
             Analyze this student response to a learning exercise.
 
@@ -381,7 +679,7 @@ export class AITutorService {
 
       // Generate assessment questions
       const { text: assessmentContent } = await generateText({
-        model: google("gemini-2.0-flash-001", { apiKey: GEMINI_API_KEY }),
+        model: google("gemini-2.0-flash-001", { apiKey: GEMINI_API_KEY as any }),
         prompt: `
           Create a comprehensive skill assessment for "${topic}".
 
@@ -439,7 +737,7 @@ export class AITutorService {
 
       // Generate a personalized learning path
       const { text: pathContent } = await generateText({
-        model: google("gemini-2.0-flash-001", { apiKey: GEMINI_API_KEY }),
+        model: google("gemini-2.0-flash-001", { apiKey: GEMINI_API_KEY as any }),
         prompt: `
           Create a personalized learning path for a student with the following goal:
           "${goal}" within a timeframe of ${timeframe}.

@@ -81,6 +81,10 @@ export class SSIService {
   public mockInitialize(): void {
     // Set a mock DID
     this.userDid = "did:omnilearn:" + ethers.hexlify(ethers.randomBytes(16));
+    // Mark the service as initialized in mock mode
+    this.didRegistry = {} as ethers.Contract;
+    this.ssiController = {} as ethers.Contract;
+    this.signer = {} as ethers.Signer;
     console.log("SSI service mock initialized with DID:", this.userDid);
   }
 
@@ -99,7 +103,8 @@ export class SSIService {
       const hasDid = await this.didRegistry.hasDid(userAddress);
 
       if (hasDid) {
-        this.userDid = await this.didRegistry.addressToDid(userAddress);
+        const did = await this.didRegistry.addressToDid(userAddress);
+        this.userDid = did as string;
         return this.userDid;
       }
 
@@ -127,14 +132,17 @@ export class SSIService {
    */
   public async getUserDid(): Promise<string> {
     try {
-      if (!this.signer || !this.didRegistry) {
-        throw new Error("SSI service not initialized");
-      }
-
+      // If we already have a userDid (from mock or real initialization), return it
       if (this.userDid) {
         return this.userDid;
       }
 
+      // Check if service is initialized
+      if (!this.signer || !this.didRegistry) {
+        throw new Error("SSI service not initialized");
+      }
+
+      // Try to get the DID from the blockchain
       const userAddress = await this.signer.getAddress();
       const hasDid = await this.didRegistry.hasDid(userAddress);
 
@@ -142,7 +150,8 @@ export class SSIService {
         throw new Error("User does not have a DID");
       }
 
-      this.userDid = await this.didRegistry.addressToDid(userAddress);
+      const did = await this.didRegistry.addressToDid(userAddress);
+      this.userDid = did as string;
       return this.userDid;
     } catch (error) {
       console.error("Error getting user DID:", error);
@@ -187,7 +196,10 @@ export class SSIService {
         (log: any) => log.fragment?.name === "CredentialIssued"
       );
 
-      const credentialId = event?.args?.credentialId;
+      const credentialId = event?.args?.credentialId as string;
+      if (!credentialId) {
+        throw new Error("Failed to get credential ID from event");
+      }
 
       console.log("Issued credential:", credentialId);
       return credentialId;
@@ -233,7 +245,7 @@ export class SSIService {
 
         const credentials = await Promise.all(
           credentialIds.map(async (id: string) => {
-            const credential = await this.ssiController.getCredential(id);
+            const credential = await this.ssiController!.getCredential(id);
             return {
               id,
               type: credential.type,

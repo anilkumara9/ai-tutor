@@ -8,6 +8,7 @@ import { useNexus } from "@/contexts/NexusContext";
 
 // Types for our analytics data
 interface SkillData {
+  id?: string;
   name: string;
   level: number;
   progress: number;
@@ -32,8 +33,9 @@ const AdvancedLearningAnalytics: React.FC = () => {
   // Generate mock data based on actual credentials
   useEffect(() => {
     if (credentials) {
-      // Extract skills from credentials
-      const extractedSkills: SkillData[] = credentials.livingCredentials?.map((cred: any) => ({
+      // Extract skills from credentials and ensure each has a unique ID
+      const extractedSkills: (SkillData & { id: string })[] = credentials.livingCredentials?.map((cred: any) => ({
+        id: cred.tokenId || `cred-${Math.random().toString(36).substring(2, 9)}`,
         name: cred.skill,
         level: cred.level === "Advanced" ? 90 : cred.level === "Intermediate" ? 60 : 30,
         progress: Math.floor(Math.random() * 30) + 70, // 70-100% for demo
@@ -43,9 +45,9 @@ const AdvancedLearningAnalytics: React.FC = () => {
       // Add some additional skills if we don't have enough
       if (extractedSkills.length < 3) {
         const additionalSkills = [
-          { name: "Blockchain Development", level: 75, progress: 85, lastActivity: "2023-10-15" },
-          { name: "Smart Contract Security", level: 60, progress: 78, lastActivity: "2023-10-20" },
-          { name: "Decentralized Finance", level: 45, progress: 92, lastActivity: "2023-10-25" }
+          { id: "mock-skill-1", name: "Blockchain Development", level: 75, progress: 85, lastActivity: "2023-10-15" },
+          { id: "mock-skill-2", name: "Smart Contract Security", level: 60, progress: 78, lastActivity: "2023-10-20" },
+          { id: "mock-skill-3", name: "Decentralized Finance", level: 45, progress: 92, lastActivity: "2023-10-25" }
         ];
         
         for (let i = 0; i < Math.min(3 - extractedSkills.length, additionalSkills.length); i++) {
@@ -276,7 +278,7 @@ const AdvancedLearningAnalytics: React.FC = () => {
             <div className="space-y-4 mt-4">
               <h3 className="text-lg font-medium">Skill Proficiency</h3>
               {skillsData.map((skill) => (
-                <div key={skill.name} className="space-y-1">
+                <div key={skill.id || `skill-${skill.name}-${Math.random().toString(36).substring(2, 9)}`} className="space-y-1">
                   <div className="flex justify-between">
                     <span className="text-sm font-medium">{skill.name}</span>
                     <span className="text-sm text-muted-foreground">{skill.level}%</span>

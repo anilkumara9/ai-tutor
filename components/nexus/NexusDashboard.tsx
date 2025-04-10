@@ -23,6 +23,8 @@ import BlockchainLearningPath from "./BlockchainLearningPath";
 import DynamicNFTCredential from "./DynamicNFTCredential";
 import DecentralizedIdentity from "./DecentralizedIdentity";
 import DAOGovernance from "./DAOGovernance";
+import SkillPortfolio from "./SkillPortfolio";
+import JobMatching from "./JobMatching";
 
 const NexusDashboard: React.FC = () => {
   const {
@@ -159,15 +161,16 @@ const NexusDashboard: React.FC = () => {
         onValueChange={setActiveTab}
         className="w-full"
       >
-        <TabsList className="grid grid-cols-8 mb-6">
+        <TabsList className="grid grid-cols-9 mb-6">
           <TabsTrigger value="overview">Overview</TabsTrigger>
           <TabsTrigger value="analytics">Analytics</TabsTrigger>
           <TabsTrigger value="learning">Learning Path</TabsTrigger>
           <TabsTrigger value="ai-tutor">AI Tutor</TabsTrigger>
           <TabsTrigger value="credentials">Credentials</TabsTrigger>
+          <TabsTrigger value="portfolio">Portfolio</TabsTrigger>
+          <TabsTrigger value="jobs">Jobs</TabsTrigger>
           <TabsTrigger value="identity">Identity</TabsTrigger>
           <TabsTrigger value="governance">DAO</TabsTrigger>
-          <TabsTrigger value="tokens">Tokens</TabsTrigger>
         </TabsList>
 
         {/* Overview Tab */}
@@ -316,6 +319,16 @@ const NexusDashboard: React.FC = () => {
         {/* Credentials Tab */}
         <TabsContent value="credentials">
           <DynamicNFTCredential />
+        </TabsContent>
+
+        {/* Portfolio Tab */}
+        <TabsContent value="portfolio">
+          <SkillPortfolio />
+        </TabsContent>
+
+        {/* Jobs Tab */}
+        <TabsContent value="jobs">
+          <JobMatching />
         </TabsContent>
 
         {/* Identity Tab */}
